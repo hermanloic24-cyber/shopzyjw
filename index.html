@@ -845,7 +845,61 @@
         min-height: 150px;
         resize: vertical;
     }
-    
+    /* Contact Section */
+.contact-section {
+    max-width: 1000px;
+    margin: 5rem auto;
+    padding: 0 5%;
+}
+
+.contact-container {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    border-top: 5px solid var(--primary-gold);
+}
+
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-input {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.contact-input:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.btn-submit-contact {
+    background: linear-gradient(135deg, var(--primary-gold) 0%, #F0C45C 100%);
+    color: var(--deep-navy);
+    border: none;
+    padding: 1.2rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    width: 100%;
+}
+
+.btn-submit-contact:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+}
     .btn-submit-custom {
         background: linear-gradient(135deg, var(--primary-gold) 0%, #F0C45C 100%);
         color: var(--deep-navy);
@@ -864,7 +918,6 @@
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
     }
-    
     /* Responsive */
     @media (max-width: 768px) {
         .hero h1 {
@@ -894,6 +947,7 @@
             flex-direction: column;
             align-items: flex-start;
         }
+        
     }
 </style>
 ```
@@ -1393,7 +1447,20 @@
         </div>
     </div>
 </section>
-
+<!-- Contact Form Section -->
+<section class="contact-section" id="contact">
+    <div class="contact-container">
+        <h2 class="section-title">Restez Connecté</h2>
+        <p class="section-subtitle">Laissez-nous vos coordonnées pour être informé de nos nouveautés</p>
+        
+        <div class="contact-form">
+            <input type="text" id="contactName" placeholder="Votre nom complet" class="contact-input">
+            <input type="tel" id="contactPhone" placeholder="Votre numéro WhatsApp" class="contact-input">
+            <input type="email" id="contactEmail" placeholder="Votre email (optionnel)" class="contact-input">
+            <button class="btn-submit-contact" onclick="submitContact()">Me Contacter sur WhatsApp</button>
+        </div>
+    </div>
+</section>
 <!-- Footer -->
 <footer>
     <p>&copy; 2026 SHOPZYJW - Tous droits réservés</p>
@@ -1785,7 +1852,7 @@
         const encodedMessage = encodeURIComponent(message);
         
         // IMPORTANT: Utilisez le même numéro que pour les commandes
-        const phoneNumber = "33612345678"; // CHANGEZ CE NUMÉRO PAR LE VÔTRE
+        const phoneNumber = "237622154486"; // CHANGEZ CE NUMÉRO PAR LE VÔTRE
         
         // Créer l'URL WhatsApp
         const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
@@ -1867,7 +1934,7 @@
         const encodedMessage = encodeURIComponent(whatsappMessage);
         
         // IMPORTANT: Utilisez le même numéro que pour les commandes
-        const phoneNumber = "33612345678"; // CHANGEZ CE NUMÉRO PAR LE VÔTRE
+        const phoneNumber = "237622154486"; // CHANGEZ CE NUMÉRO PAR LE VÔTRE
         
         // Créer l'URL WhatsApp
         const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
@@ -1883,12 +1950,86 @@
         
         alert('Merci ! Votre demande personnalisée va être envoyée via WhatsApp.');
     }
+    // Submit contact function - Notify admin of new visitor
+function submitContact() {
+    // Security checks
+    if (securityCheck.blocked) {
+        alert('Requête bloquée. Veuillez réessayer plus tard.');
+        return;
+    }
+    
+    if (!checkRateLimit()) {
+        alert('Trop de requêtes. Veuillez patienter un moment.');
+        return;
+    }
+    
+    const nameInput = document.getElementById('contactName').value;
+    const phoneInput = document.getElementById('contactPhone').value;
+    const emailInput = document.getElementById('contactEmail').value;
+    
+    // Sanitize inputs
+    const name = sanitizeInput(nameInput);
+    const phone = sanitizeInput(phoneInput);
+    const email = sanitizeInput(emailInput);
+    
+    // Validate required fields
+    if (!name || !phone) {
+        alert('Veuillez remplir votre nom et numéro WhatsApp.');
+        return;
+    }
+    
+    // Validate lengths
+    if (!validateLength(name, 2, 100)) {
+        alert('Le nom doit contenir entre 2 et 100 caractères.');
+        return;
+    }
+    
+    if (!validateLength(phone, 8, 15)) {
+        alert('Le numéro de téléphone doit contenir entre 8 et 15 chiffres.');
+        return;
+    }
+    
+    // Validate email if provided
+    if (email && !isValidEmail(email)) {
+        alert('Veuillez entrer une adresse email valide.');
+        return;
+    }
+    
+    // Create message for WhatsApp
+    let whatsappMessage = "🔔 *NOUVEAU VISITEUR INSCRIT*\n\n";
+    whatsappMessage += `👤 Nom: ${name}\n`;
+    whatsappMessage += `📱 Téléphone: ${phone}\n`;
+    if (email) {
+        whatsappMessage += `📧 Email: ${email}\n`;
+    }
+    whatsappMessage += `\n⏰ Date: ${new Date().toLocaleString('fr-FR')}\n`;
+    
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    
+    // IMPORTANT: Your WhatsApp number
+    const phoneNumber = "237622154486"; // CHANGEZ PAR VOTRE NUMÉRO
+    
+    // Create WhatsApp URL
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    
+    // Open WhatsApp in new tab
+    window.open(whatsappURL, '_blank');
+    
+    // Reset form
+    document.getElementById('contactName').value = '';
+    document.getElementById('contactPhone').value = '';
+    document.getElementById('contactEmail').value = '';
+    
+    alert('Merci ! Vos informations vont être envoyées via WhatsApp.');
+}
 </script>
 ```
 
 </body>
 
 </html>
+
 
 
 
